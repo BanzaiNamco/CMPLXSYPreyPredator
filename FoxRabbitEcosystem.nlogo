@@ -1,10 +1,13 @@
 patches-own[
   grass-amount
 ]
-
 turtles-own[
   energy
+  max-energy
 ]
+
+breed [rabbits rabbit]
+breed [wolves wolf]
 
 to setup
   clear-all
@@ -24,13 +27,12 @@ to setup
 end
 
 to spawn-rabbits
-  ask n-of num-rabbits patches[
-    sprout 1 [
-      set shape "rabbit"
-      set color 114
-      set energy random 30 + 70 ;set energy to random number from 70-100
-      set size 2
-    ]
+  create-rabbits num-rabbits [
+    set shape "rabbit"
+    set color 114
+    set energy random 30 + 70 ;set energy to random number from 70-100
+    set size 2
+    move-to one-of patches
   ]
 end
 
@@ -46,10 +48,22 @@ to spawn-foxes
 end
 
 to go
-  if not any? turtles with [shape = "rabbit" or shape = "wolf 2"] ;i dont know if this is correct
-  [stop]
-  ; move agents
 
+  ; move agents
+  ask rabbits [
+    fd 2
+    ifelse energy < 50
+    [
+      rabbit-find-and-eat
+    ]
+    [
+      ifelse coin-flip? [right random max-turn][left random max-turn]
+    ]
+
+    set energy (energy - 5)
+    death
+    set label energy
+  ]
   tick
 end
 
@@ -69,6 +83,28 @@ to-report eat-patch
   ]
   report eat
 end
+
+to rabbit-find-and-eat
+  if [pcolor] of patch-ahead 5 != 36
+  [
+    let grass-patch min-one-of (patches in-cone 0 180 with [pcolor != 36]) [distance myself]
+    if grass-patch != nobody
+    [
+      set heading(towards grass-patch)
+    ]
+  ]
+  if pcolor != 36 [
+    set pcolor 36
+    set energy (energy + 10)
+  ]
+end
+
+to death
+  if energy < 0 [ die ]
+end
+to-report coin-flip?
+  report random 2 = 0
+end
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -84,8 +120,8 @@ GRAPHICS-WINDOW
 1
 1
 0
-0
-0
+1
+1
 1
 -16
 16
@@ -175,6 +211,21 @@ NIL
 NIL
 NIL
 1
+
+SLIDER
+18
+203
+190
+236
+max-turn
+max-turn
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
