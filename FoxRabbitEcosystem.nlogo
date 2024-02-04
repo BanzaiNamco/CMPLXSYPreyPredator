@@ -7,8 +7,8 @@ turtles-own[
 ]
 
 to setup
-  reset-ticks
   clear-all
+  reset-ticks
   ask patches [
     set pcolor 36
   ]
