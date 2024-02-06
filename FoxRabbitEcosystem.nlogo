@@ -7,7 +7,7 @@ turtles-own[
 ]
 
 breed [rabbits rabbit]
-breed [wolves wolf]
+breed [foxes fox]
 
 to setup
   clear-all
@@ -37,19 +37,37 @@ to spawn-rabbits
 end
 
 to spawn-foxes
-  ask n-of num-foxes patches with [not any? turtles-here] [
-    sprout 1 [
-      set shape "wolf 2"
-      set color 15
-      set energy random 40 + 50 ;set energy to random number from 50-90
-      set size 3
-    ]
+  create-foxes num-foxes [
+    set shape "wolf 2"
+    set color 15
+    set energy random 40 + 50 ;set energy to random number from 50-90
+    set size 3
+    move-to one-of patches with [not any? turtles-here]
   ]
 end
 
 to go
 
-  ; move agents
+  if any? patches with [pcolor = 36] [
+    grow-grass
+  ]
+  move-rabbits
+  move-foxes
+
+  tick
+end
+
+to grow-grass
+  ; incomplete due to an issue
+    ask n-of grass-growth patches with [pcolor = 36] [
+      let clr random 5
+      set pcolor clr + 64
+      set grass-amount grass-amount + 1
+    ]
+end
+
+to move-rabbits
+  ; move rabbits
   ask rabbits [
     fd 2
     ifelse energy < 50
@@ -64,7 +82,24 @@ to go
     death
     set label energy
   ]
-  tick
+end
+
+to move-foxes
+  ; move foxes
+  ask foxes [
+    fd 3
+    ifelse energy < 50
+    [
+      fox-find-and-eat ; not yet working
+    ]
+    [
+      ifelse coin-flip? [right random max-turn][left random max-turn]
+    ]
+
+    set energy (energy - 7.5)
+    death
+    set label energy
+  ]
 end
 
 ; no clue if this works
@@ -99,6 +134,10 @@ to rabbit-find-and-eat
   ]
 end
 
+to fox-find-and-eat ; not yet working
+
+end
+
 to death
   if energy < 0 [ die ]
 end
@@ -107,9 +146,9 @@ to-report coin-flip?
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+279
 10
-647
+716
 448
 -1
 -1
@@ -134,10 +173,10 @@ ticks
 30.0
 
 SLIDER
-16
-404
-188
-437
+11
+309
+183
+342
 grass
 grass
 1
@@ -189,7 +228,7 @@ num-foxes
 num-foxes
 1
 100
-50.0
+25.0
 1
 1
 NIL
@@ -226,6 +265,40 @@ max-turn
 1
 NIL
 HORIZONTAL
+
+SLIDER
+17
+244
+189
+277
+grass-growth
+grass-growth
+0
+10
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+PLOT
+11
+353
+267
+503
+population
+time
+pop
+0.0
+100.0
+0.0
+100.0
+true
+true
+"" ""
+PENS
+"rabbit" 1.0 0 -8630108 true "" "plot count rabbits"
+"fox" 1.0 0 -2674135 true "" "plot count foxes"
 
 @#$#@#$#@
 ## WHAT IS IT?
