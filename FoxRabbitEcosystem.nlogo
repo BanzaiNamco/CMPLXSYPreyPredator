@@ -12,15 +12,9 @@ breed [foxes fox]
 to setup
   clear-all
   reset-ticks
-  ask patches [
-    set pcolor 36
-  ]
 
-  ask n-of grass patches [
-    let clr random 5
-    set pcolor clr + 64
-    set grass-amount clr
-  ]
+  ask n-of grass patches [set grass-amount random 5]
+  ask patches [recolor-patch]
 
   spawn-rabbits
   spawn-foxes
@@ -46,22 +40,27 @@ to spawn-foxes
   ]
 end
 
+to recolor-patch ;patch procedure
+  ifelse grass-amount > 0 [
+    set pcolor 68 - grass-amount
+  ][
+    set pcolor 36
+  ]
+end
+
 to go
   if (not any? rabbits and not any? foxes) [stop]
 
-  if any? patches with [pcolor = 36] [
-    grow-grass
-  ]
+  grow-grass
   move-rabbits
   move-foxes
 
+  ask patches [recolor-patch]
   tick
 end
 
 to grow-grass
-    ask up-to-n-of grass-growth patches with [pcolor = 36] [
-      let clr random 5
-      set pcolor clr + 64
+    ask up-to-n-of grass-growth patches with [grass-amount = 0] [
       set grass-amount grass-amount + 1
     ]
 end
@@ -106,17 +105,17 @@ end
 
 
 to rabbit-find-and-eat
-  if [pcolor] of patch-ahead 5 != 36
+  if [grass-amount] of patch-ahead 5 > 0
   [
-    let grass-patch min-one-of (patches in-cone 5 330 with [pcolor != 36]) [distance myself]
+    let grass-patch min-one-of (patches in-cone 5 330 with [grass-amount > 0]) [distance myself]
     ;;https://web.as.miami.edu/hare/vision.html
     if grass-patch != nobody
     [
       set heading(towards grass-patch)
     ]
   ]
-  if pcolor != 36 [
-    set pcolor 36
+  if grass-amount > 0 [
+    set grass-amount grass-amount - 1
     set energy (energy + rabbit-gain-from-food)
   ]
 end
