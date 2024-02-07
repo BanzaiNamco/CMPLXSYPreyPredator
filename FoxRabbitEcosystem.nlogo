@@ -47,7 +47,6 @@ to spawn-foxes
 end
 
 to go
-
   if any? patches with [pcolor = 36] [
     grow-grass
   ]
@@ -102,27 +101,12 @@ to move-foxes
   ]
 end
 
-; no clue if this works
-to-report eat-patch
-  let eat 0
-  ask patch-here [
-    if grass-amount > 0 [
-      set grass-amount grass-amount - 1
-      ifelse grass-amount <= 0 [
-        set pcolor 36
-      ][
-        set pcolor pcolor + 1
-      ]
-      set eat 1
-    ]
-  ]
-  report eat
-end
 
 to rabbit-find-and-eat
   if [pcolor] of patch-ahead 5 != 36
   [
-    let grass-patch min-one-of (patches in-cone 0 180 with [pcolor != 36]) [distance myself]
+    let grass-patch min-one-of (patches in-cone 5 330 with [pcolor != 36]) [distance myself]
+    ;;https://web.as.miami.edu/hare/vision.html
     if grass-patch != nobody
     [
       set heading(towards grass-patch)
@@ -135,6 +119,19 @@ to rabbit-find-and-eat
 end
 
 to fox-find-and-eat ; not yet working
+  if any? rabbits in-cone 5 90
+  [
+    let target-rabbit min-one-of (rabbits in-cone 5 260) [distance myself]
+    ;; https://www.wildlifeonline.me.uk/animals/article/red-fox-senses
+    if target-rabbit != nobody [
+      set heading(towards target-rabbit)
+    ]
+  ]
+  let target one-of rabbits
+  if target != nobody[
+    ask target [ die ]
+    set energy (energy + 10)
+  ]
 
 end
 
@@ -275,7 +272,7 @@ grass-growth
 grass-growth
 0
 10
-10.0
+0.0
 1
 1
 NIL
