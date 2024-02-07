@@ -4,6 +4,7 @@ patches-own[
 turtles-own[
   energy
   max-energy
+  age
 ]
 
 breed [rabbits rabbit]
@@ -26,6 +27,7 @@ to spawn-rabbits
     set color 114
     set energy random 30 + 70 ;set energy to random number from 70-100
     set size 2
+    set age 0
     move-to one-of patches
   ]
 end
@@ -36,6 +38,7 @@ to spawn-foxes
     set color 15
     set energy random 40 + 50 ;set energy to random number from 50-90
     set size 3
+    set age 0
     move-to one-of patches with [not any? turtles-here]
   ]
 end
@@ -49,11 +52,11 @@ to recolor-patch ;patch procedure
 end
 
 to go
-  if (not any? rabbits and not any? foxes) [stop]
+  if (not any? rabbits or not any? foxes) [stop]
 
   grow-grass
   move-rabbits
-  move-foxes
+  ifelse control-predation = false [move-foxes] [move-foxes-2]
 
   ask patches [recolor-patch]
   tick
@@ -66,69 +69,102 @@ to grow-grass
 end
 
 to move-rabbits
-  ; move rabbits
   ask rabbits [
-    fd 2
+    set age age + 1
     ifelse energy < rabbit-hunger-threshold
+    [rabbit-find-and-eat]
     [
-      rabbit-find-and-eat
-    ]
-    [
-      ifelse coin-flip? [right random max-turn][left random max-turn]
-      if energy > rabbit-reproduce-cost [reproduce-foxes]
+      ifelse coin-flip? [right random max-turn-rabbit][left random max-turn-rabbit]
+      fd 1
+      set energy (energy - rabbit-move-cost)
+      if energy > rabbit-reproduce-cost [reproduce-rabbits]
     ]
 
-    set energy (energy - rabbit-move-cost)
     death
+    age-death-rabbit
     set label energy
   ]
 end
 
 to move-foxes
-  ; move foxes
   ask foxes [
-    fd 3
-    ifelse energy < fox-hunger-threshold
+    set age age + 1
+    ifelse (energy < fox-hunger-threshold)
+    [fox-find-and-eat]
     [
-      fox-find-and-eat ; not yet working
-    ]
-    [
-      ifelse coin-flip? [right random max-turn][left random max-turn]
+      ifelse coin-flip? [right random max-turn-fox][left random max-turn-fox]
+      fd 1
+      set energy (energy - fox-move-cost)
       if energy > fox-reproduce-cost [reproduce-foxes]
     ]
 
-    set energy (energy - fox-move-cost)
     death
+    age-death-fox
+    set label energy
+  ]
+end
+
+to move-foxes-2
+  ask foxes [
+    set age age + 1
+    ifelse (energy < fox-hunger-threshold) and (count rabbits > count foxes * 1.5)
+    [fox-find-and-eat]
+    [
+      ifelse coin-flip? [right random max-turn-fox][left random max-turn-fox]
+      fd 1
+      set energy (energy - fox-move-cost)
+      if energy > fox-reproduce-cost [reproduce-foxes]
+    ]
+
+    death
+    age-death-fox
     set label energy
   ]
 end
 
 
 to rabbit-find-and-eat
-  if [grass-amount] of patch-ahead 5 > 0
+  let grass-patch min-one-of (patches in-cone 5 330 with [grass-amount > 0]) [distance myself]
+  ;;https://web.as.miami.edu/hare/vision.html
+  ifelse grass-patch != nobody
   [
-    let grass-patch min-one-of (patches in-cone 5 330 with [grass-amount > 0]) [distance myself]
-    ;;https://web.as.miami.edu/hare/vision.html
-    if grass-patch != nobody
-    [
-      set heading(towards grass-patch)
-    ]
-  ]
+    set heading(towards grass-patch)
+    let distance-to-grass round distance grass-patch
+
+    let movement min list distance-to-grass 2
+    fd movement
+    eat-grass
+    set energy (energy - rabbit-move-cost * movement)
+  ] [fd 1 set energy (energy - rabbit-move-cost)]
+
+end
+
+to eat-grass
   if grass-amount > 0 [
     set grass-amount grass-amount - 1
     set energy (energy + rabbit-gain-from-food)
   ]
 end
 
-to fox-find-and-eat ; not yet working
-  if any? rabbits in-cone 5 260
+to fox-find-and-eat
+  ifelse any? rabbits in-cone 5 260
   [
     let target-rabbit min-one-of (rabbits in-cone 5 260) [distance myself]
     ;; https://www.wildlifeonline.me.uk/animals/article/red-fox-senses
     if target-rabbit != nobody [
-      set heading(towards target-rabbit)
+      ifelse not member? target-rabbit rabbits-here [
+        set heading(towards target-rabbit)
+        let distance-to-rabbit round distance target-rabbit
+
+        ifelse distance-to-rabbit > 2 [fd 3] [fd distance-to-rabbit + 1]
+        set energy (energy - (fox-move-cost * (min list distance-to-rabbit 3)))
+      ]
+      [eat-rabbit]
     ]
-  ]
+  ] [fd 1 set energy (energy - fox-move-cost)]
+end
+
+to eat-rabbit
   let target one-of rabbits-here
   if target != nobody[
     ask target [ die ]
@@ -137,9 +173,10 @@ to fox-find-and-eat ; not yet working
 end
 
 to reproduce-rabbits
-  if random-float 100 < rabbit-reproduce-% [
+  if (random-float 100 < rabbit-reproduce-%) [
     set energy (energy - rabbit-reproduce-cost)
-    hatch 1 [
+    hatch random 7 [
+      set age 0
       set energy 50
       rt random-float 360 fd 1
     ]
@@ -147,9 +184,10 @@ to reproduce-rabbits
 end
 
 to reproduce-foxes
-  if random-float 100 < fox-reproduce-% [
+  if (random-float 100 < fox-reproduce-%) [
     set energy (energy - fox-reproduce-cost)
-    hatch 1 [
+    hatch random 5 [
+      set age 0
       set energy 50
       rt random-float 360 fd 1
     ]
@@ -159,15 +197,24 @@ end
 to death
   if energy < 0 [ die ]
 end
+
+to age-death-fox
+  if age > 20 [die]
+end
+
+to age-death-rabbit
+  if age > 25 [die]
+end
+
 to-report coin-flip?
   report random 2 = 0
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-279
+541
 10
-716
-448
+1082
+552
 -1
 -1
 13.0
@@ -180,10 +227,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--16
-16
--16
-16
+-20
+20
+-20
+20
 1
 1
 1
@@ -191,15 +238,15 @@ ticks
 30.0
 
 SLIDER
-11
-309
-183
-342
+17
+191
+189
+224
 grass
 grass
 1
 1000
-622.0
+1000.0
 1
 1
 NIL
@@ -223,30 +270,30 @@ NIL
 1
 
 SLIDER
-19
-119
-191
-152
+16
+62
+188
+95
 num-rabbits
 num-rabbits
 1
 100
-59.0
+100.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-19
-162
-191
-195
+16
+105
+188
+138
 num-foxes
 num-foxes
 1
 100
-28.0
+38.0
 1
 1
 NIL
@@ -270,30 +317,30 @@ NIL
 1
 
 SLIDER
-18
-203
-190
-236
-max-turn
-max-turn
-0
-100
-53.0
+199
+61
+371
+94
+max-turn-rabbit
+max-turn-rabbit
+1
+360
+202.0
 1
 1
 NIL
 HORIZONTAL
 
 SLIDER
-17
-244
-189
-277
+16
+146
+188
+179
 grass-growth
 grass-growth
 0
-10
-5.0
+1000
+172.0
 1
 1
 NIL
@@ -301,9 +348,9 @@ HORIZONTAL
 
 PLOT
 11
-353
-267
-503
+258
+525
+519
 population
 time
 pop
@@ -349,8 +396,8 @@ SLIDER
 fox-gain-from-food
 fox-gain-from-food
 0
-20
-15.0
+100
+30.0
 1
 1
 NIL
@@ -365,7 +412,7 @@ rabbit-gain-from-food
 rabbit-gain-from-food
 0
 20
-10.0
+15.0
 1
 1
 NIL
@@ -380,7 +427,7 @@ fox-move-cost
 fox-move-cost
 0
 20
-2.0
+3.0
 0.5
 1
 NIL
@@ -395,7 +442,7 @@ rabbit-move-cost
 rabbit-move-cost
 0
 20
-1.0
+1.5
 0.5
 1
 NIL
@@ -410,7 +457,7 @@ fox-reproduce-cost
 fox-reproduce-cost
 0
 100
-15.0
+41.0
 1
 1
 NIL
@@ -425,7 +472,7 @@ rabbit-reproduce-cost
 rabbit-reproduce-cost
 0
 100
-10.0
+30.0
 1
 1
 NIL
@@ -439,8 +486,8 @@ SLIDER
 fox-reproduce-%
 fox-reproduce-%
 0
-20
-5.0
+100
+4.0
 1
 1
 %
@@ -449,13 +496,13 @@ HORIZONTAL
 SLIDER
 191
 729
-363
+368
 762
 rabbit-reproduce-%
 rabbit-reproduce-%
 0
-20
-10.0
+100
+3.0
 1
 1
 %
@@ -470,7 +517,7 @@ fox-hunger-threshold
 fox-hunger-threshold
 0
 100
-32.0
+45.0
 1
 1
 NIL
@@ -485,7 +532,7 @@ rabbit-hunger-threshold
 rabbit-hunger-threshold
 0
 100
-20.0
+45.0
 1
 1
 NIL
@@ -501,6 +548,62 @@ sum [grass-amount] of patches
 17
 1
 11
+
+SWITCH
+193
+17
+344
+50
+control-predation
+control-predation
+1
+1
+-1000
+
+SLIDER
+200
+104
+372
+137
+max-turn-fox
+max-turn-fox
+1
+360
+177.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+427
+597
+599
+630
+fox-max-age
+fox-max-age
+5
+100
+20.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+427
+643
+599
+676
+rabbit-max-age
+rabbit-max-age
+5
+100
+16.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
