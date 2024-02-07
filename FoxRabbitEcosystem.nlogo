@@ -122,7 +122,7 @@ to rabbit-find-and-eat
 end
 
 to fox-find-and-eat ; not yet working
-  if any? rabbits in-cone 5 90
+  if any? rabbits in-cone 5 260
   [
     let target-rabbit min-one-of (rabbits in-cone 5 260) [distance myself]
     ;; https://www.wildlifeonline.me.uk/animals/article/red-fox-senses
@@ -130,10 +130,10 @@ to fox-find-and-eat ; not yet working
       set heading(towards target-rabbit)
     ]
   ]
-  let target one-of rabbits
+  let target one-of rabbits-here
   if target != nobody[
     ask target [ die ]
-    set energy (energy + 10)
+    set energy (energy + fox-gain-from-food)
   ]
 end
 
@@ -141,7 +141,7 @@ to reproduce-rabbits
   if random-float 100 < rabbit-reproduce-% [
     set energy (energy - rabbit-reproduce-cost)
     hatch 1 [
-      set energy 20
+      set energy 50
       rt random-float 360 fd 1
     ]
   ]
@@ -151,7 +151,7 @@ to reproduce-foxes
   if random-float 100 < fox-reproduce-% [
     set energy (energy - fox-reproduce-cost)
     hatch 1 [
-      set energy 20
+      set energy 50
       rt random-float 360 fd 1
     ]
   ]
@@ -200,7 +200,7 @@ grass
 grass
 1
 1000
-625.0
+622.0
 1
 1
 NIL
@@ -232,7 +232,7 @@ num-rabbits
 num-rabbits
 1
 100
-50.0
+57.0
 1
 1
 NIL
@@ -247,7 +247,7 @@ num-foxes
 num-foxes
 1
 100
-25.0
+28.0
 1
 1
 NIL
@@ -279,7 +279,7 @@ max-turn
 max-turn
 0
 100
-50.0
+53.0
 1
 1
 NIL
@@ -294,7 +294,7 @@ grass-growth
 grass-growth
 0
 10
-0.0
+5.0
 1
 1
 NIL
@@ -350,7 +350,7 @@ fox-gain-from-food
 fox-gain-from-food
 0
 20
-10.0
+15.0
 1
 1
 NIL
@@ -380,7 +380,7 @@ fox-move-cost
 fox-move-cost
 0
 20
-7.5
+2.0
 0.5
 1
 NIL
@@ -395,7 +395,7 @@ rabbit-move-cost
 rabbit-move-cost
 0
 20
-5.0
+1.0
 0.5
 1
 NIL
@@ -410,7 +410,7 @@ fox-reproduce-cost
 fox-reproduce-cost
 0
 100
-50.0
+15.0
 1
 1
 NIL
@@ -425,7 +425,7 @@ rabbit-reproduce-cost
 rabbit-reproduce-cost
 0
 100
-50.0
+10.0
 1
 1
 NIL
@@ -455,7 +455,7 @@ rabbit-reproduce-%
 rabbit-reproduce-%
 0
 20
-5.0
+10.0
 1
 1
 %
@@ -470,7 +470,7 @@ fox-hunger-threshold
 fox-hunger-threshold
 0
 100
-50.0
+32.0
 1
 1
 NIL
@@ -485,7 +485,7 @@ rabbit-hunger-threshold
 rabbit-hunger-threshold
 0
 100
-50.0
+20.0
 1
 1
 NIL
