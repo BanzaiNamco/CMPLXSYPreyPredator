@@ -206,10 +206,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-16
-13
-79
-46
+20
+19
+83
+52
 setup
 setup\n
 NIL
@@ -231,7 +231,7 @@ num-rabbits
 num-rabbits
 1
 100
-57.0
+59.0
 1
 1
 NIL
@@ -253,10 +253,10 @@ NIL
 HORIZONTAL
 
 BUTTON
-91
-14
-154
-47
+95
+20
+158
+53
 go
 go
 T
@@ -317,6 +317,7 @@ true
 PENS
 "rabbit" 1.0 0 -8630108 true "" "plot count rabbits"
 "fox" 1.0 0 -2674135 true "" "plot count foxes"
+"grass" 1.0 0 -7500403 true "" "plot sum [grass-amount] of patches / 5"
 
 MONITOR
 25
@@ -489,6 +490,17 @@ rabbit-hunger-threshold
 1
 NIL
 HORIZONTAL
+
+MONITOR
+169
+524
+226
+569
+grass
+sum [grass-amount] of patches
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
