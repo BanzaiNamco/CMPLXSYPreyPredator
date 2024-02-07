@@ -275,7 +275,7 @@ grass-growth
 grass-growth
 0
 10
-1.0
+6.0
 1
 1
 NIL
@@ -299,6 +299,28 @@ true
 PENS
 "rabbit" 1.0 0 -8630108 true "" "plot count rabbits"
 "fox" 1.0 0 -2674135 true "" "plot count foxes"
+
+MONITOR
+25
+523
+82
+568
+foxes
+count foxes
+17
+1
+11
+
+MONITOR
+95
+523
+152
+568
+rabbits
+count rabbits
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
