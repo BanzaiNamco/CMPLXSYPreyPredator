@@ -58,8 +58,7 @@ to go
 end
 
 to grow-grass
-  ; incomplete due to an issue
-    ask n-of grass-growth patches with [pcolor = 36] [
+    ask up-to-n-of grass-growth patches with [pcolor = 36] [
       let clr random 5
       set pcolor clr + 64
       set grass-amount grass-amount + 1
