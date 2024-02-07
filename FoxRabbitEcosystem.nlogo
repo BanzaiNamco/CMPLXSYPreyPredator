@@ -47,6 +47,8 @@ to spawn-foxes
 end
 
 to go
+  if (not any? rabbits and not any? foxes) [stop]
+
   if any? patches with [pcolor = 36] [
     grow-grass
   ]
@@ -57,8 +59,7 @@ to go
 end
 
 to grow-grass
-  ; incomplete due to an issue
-    ask n-of grass-growth patches with [pcolor = 36] [
+    ask up-to-n-of grass-growth patches with [pcolor = 36] [
       let clr random 5
       set pcolor clr + 64
       set grass-amount grass-amount + 1
@@ -69,15 +70,16 @@ to move-rabbits
   ; move rabbits
   ask rabbits [
     fd 2
-    ifelse energy < 50
+    ifelse energy < rabbit-hunger-threshold
     [
       rabbit-find-and-eat
     ]
     [
       ifelse coin-flip? [right random max-turn][left random max-turn]
+      if energy > rabbit-reproduce-cost [reproduce-foxes]
     ]
 
-    set energy (energy - 5)
+    set energy (energy - rabbit-move-cost)
     death
     set label energy
   ]
@@ -87,15 +89,16 @@ to move-foxes
   ; move foxes
   ask foxes [
     fd 3
-    ifelse energy < 50
+    ifelse energy < fox-hunger-threshold
     [
       fox-find-and-eat ; not yet working
     ]
     [
       ifelse coin-flip? [right random max-turn][left random max-turn]
+      if energy > fox-reproduce-cost [reproduce-foxes]
     ]
 
-    set energy (energy - 7.5)
+    set energy (energy - fox-move-cost)
     death
     set label energy
   ]
@@ -114,25 +117,32 @@ to rabbit-find-and-eat
   ]
   if pcolor != 36 [
     set pcolor 36
-    set energy (energy + 10)
+    set energy (energy + rabbit-gain-from-food)
   ]
 end
 
 to fox-find-and-eat ; not yet working
-  if any? rabbits in-cone 5 90
-  [
-    let target-rabbit min-one-of (rabbits in-cone 5 260) [distance myself]
-    ;; https://www.wildlifeonline.me.uk/animals/article/red-fox-senses
-    if target-rabbit != nobody [
-      set heading(towards target-rabbit)
+
+end
+
+to reproduce-rabbits
+  if random-float 100 < rabbit-reproduce-% [
+    set energy (energy - rabbit-reproduce-cost)
+    hatch 1 [
+      set energy 20
+      rt random-float 360 fd 1
     ]
   ]
-  let target one-of rabbits
-  if target != nobody[
-    ask target [ die ]
-    set energy (energy + 10)
-  ]
+end
 
+to reproduce-foxes
+  if random-float 100 < fox-reproduce-% [
+    set energy (energy - fox-reproduce-cost)
+    hatch 1 [
+      set energy 20
+      rt random-float 360 fd 1
+    ]
+  ]
 end
 
 to death
@@ -163,8 +173,8 @@ GRAPHICS-WINDOW
 16
 -16
 16
-0
-0
+1
+1
 1
 ticks
 30.0
@@ -296,6 +306,178 @@ true
 PENS
 "rabbit" 1.0 0 -8630108 true "" "plot count rabbits"
 "fox" 1.0 0 -2674135 true "" "plot count foxes"
+
+MONITOR
+25
+523
+82
+568
+foxes
+count foxes
+17
+1
+11
+
+MONITOR
+95
+523
+152
+568
+rabbits
+count rabbits
+17
+1
+11
+
+SLIDER
+11
+574
+183
+607
+fox-gain-from-food
+fox-gain-from-food
+0
+20
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+193
+573
+365
+606
+rabbit-gain-from-food
+rabbit-gain-from-food
+0
+20
+10.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+10
+648
+182
+681
+fox-move-cost
+fox-move-cost
+0
+20
+7.5
+0.5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+192
+648
+364
+681
+rabbit-move-cost
+rabbit-move-cost
+0
+20
+5.0
+0.5
+1
+NIL
+HORIZONTAL
+
+SLIDER
+10
+690
+182
+723
+fox-reproduce-cost
+fox-reproduce-cost
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+191
+690
+363
+723
+rabbit-reproduce-cost
+rabbit-reproduce-cost
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+10
+730
+182
+763
+fox-reproduce-%
+fox-reproduce-%
+0
+20
+5.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+191
+729
+363
+762
+rabbit-reproduce-%
+rabbit-reproduce-%
+0
+20
+5.0
+1
+1
+%
+HORIZONTAL
+
+SLIDER
+10
+611
+182
+644
+fox-hunger-threshold
+fox-hunger-threshold
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+191
+611
+373
+644
+rabbit-hunger-threshold
+rabbit-hunger-threshold
+0
+100
+50.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
