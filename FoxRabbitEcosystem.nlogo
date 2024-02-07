@@ -122,7 +122,19 @@ to rabbit-find-and-eat
 end
 
 to fox-find-and-eat ; not yet working
-
+  if any? rabbits in-cone 5 90
+  [
+    let target-rabbit min-one-of (rabbits in-cone 5 260) [distance myself]
+    ;; https://www.wildlifeonline.me.uk/animals/article/red-fox-senses
+    if target-rabbit != nobody [
+      set heading(towards target-rabbit)
+    ]
+  ]
+  let target one-of rabbits
+  if target != nobody[
+    ask target [ die ]
+    set energy (energy + 10)
+  ]
 end
 
 to reproduce-rabbits
