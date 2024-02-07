@@ -47,6 +47,7 @@ to spawn-foxes
 end
 
 to go
+  if (not any? rabbits and not any? foxes) [stop]
 
   if any? patches with [pcolor = 36] [
     grow-grass
@@ -274,7 +275,7 @@ grass-growth
 grass-growth
 0
 10
-10.0
+1.0
 1
 1
 NIL
