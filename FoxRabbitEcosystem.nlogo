@@ -52,7 +52,10 @@ to recolor-patch ;patch procedure
 end
 
 to go
-  if (not any? rabbits or not any? foxes) [stop]
+  if sum [grass-amount] of patches = 0 or count rabbits = 0 or count foxes = 0
+  [print (word "tick " ticks word " f: " count foxes " r: " count rabbits " g: " sum [grass-amount] of patches)
+]
+  if (not any? rabbits or not any? foxes) [print "****" stop]
 
   grow-grass
   move-rabbits
@@ -296,7 +299,7 @@ num-foxes
 num-foxes
 1
 100
-50.0
+10.0
 1
 1
 NIL
@@ -460,7 +463,7 @@ fox-reproduce-cost
 fox-reproduce-cost
 0
 100
-30.0
+35.0
 1
 1
 NIL
