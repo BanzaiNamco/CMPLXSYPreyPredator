@@ -77,7 +77,7 @@ to move-rabbits
       ifelse coin-flip? [right random max-turn-rabbit][left random max-turn-rabbit]
       fd 1
       set energy (energy - rabbit-move-cost)
-      if energy > rabbit-reproduce-cost [reproduce-rabbits]
+      if (energy > rabbit-reproduce-cost) [reproduce-rabbits]
     ]
 
     death
@@ -92,10 +92,8 @@ to move-foxes
     ifelse (energy < fox-hunger-threshold)
     [fox-find-and-eat]
     [
-      ifelse coin-flip? [right random max-turn-fox][left random max-turn-fox]
-      fd 1
-      set energy (energy - fox-move-cost)
-      if energy > fox-reproduce-cost [reproduce-foxes]
+      fox-movement
+      if (energy > fox-reproduce-cost) [reproduce-foxes]
     ]
 
     death
@@ -110,9 +108,7 @@ to move-foxes-2
     ifelse (energy < fox-hunger-threshold) and (count rabbits > count foxes * 1.5)
     [fox-find-and-eat]
     [
-      ifelse coin-flip? [right random max-turn-fox][left random max-turn-fox]
-      fd 1
-      set energy (energy - fox-move-cost)
+      fox-movement
       if energy > fox-reproduce-cost [reproduce-foxes]
     ]
 
@@ -122,11 +118,16 @@ to move-foxes-2
   ]
 end
 
+to fox-movement
+  ifelse coin-flip? [right random max-turn-fox][left random max-turn-fox]
+  fd 1
+  set energy (energy - fox-move-cost)
+end
 
 to rabbit-find-and-eat
   let grass-patch min-one-of (patches in-cone 5 330 with [grass-amount > 0]) [distance myself]
   ;;https://web.as.miami.edu/hare/vision.html
-  ifelse grass-patch != nobody
+  (ifelse (grass-patch != nobody) and (grass-patch != patch-here)
   [
     set heading(towards grass-patch)
     let distance-to-grass round distance grass-patch
@@ -135,7 +136,9 @@ to rabbit-find-and-eat
     fd movement
     eat-grass
     set energy (energy - rabbit-move-cost * movement)
-  ] [fd 1 set energy (energy - rabbit-move-cost)]
+  ]
+  grass-patch = patch-here [eat-grass]
+  [fd 1 set energy (energy - rabbit-move-cost)])
 
 end
 
@@ -147,7 +150,7 @@ to eat-grass
 end
 
 to fox-find-and-eat
-  ifelse any? rabbits in-cone 5 260
+  ifelse any? rabbits in-cone 7 260
   [
     let target-rabbit min-one-of (rabbits in-cone 5 260) [distance myself]
     ;; https://www.wildlifeonline.me.uk/animals/article/red-fox-senses
@@ -161,7 +164,7 @@ to fox-find-and-eat
       ]
       [eat-rabbit]
     ]
-  ] [fd 1 set energy (energy - fox-move-cost)]
+  ] [fox-movement]
 end
 
 to eat-rabbit
@@ -173,7 +176,7 @@ to eat-rabbit
 end
 
 to reproduce-rabbits
-  if (random-float 100 < rabbit-reproduce-%) [
+  if (random 100 < rabbit-reproduce-%) and (age > (rabbit-max-age / 5))[
     set energy (energy - rabbit-reproduce-cost)
     hatch random 7 [
       set age 0
@@ -184,7 +187,7 @@ to reproduce-rabbits
 end
 
 to reproduce-foxes
-  if (random-float 100 < fox-reproduce-%) [
+  if (random 100 < fox-reproduce-%) and (age > (fox-max-age / 4)) [
     set energy (energy - fox-reproduce-cost)
     hatch random 5 [
       set age 0
@@ -199,11 +202,11 @@ to death
 end
 
 to age-death-fox
-  if age > 20 [die]
+  if age > fox-max-age [die]
 end
 
 to age-death-rabbit
-  if age > 25 [die]
+  if age > rabbit-max-age [die]
 end
 
 to-report coin-flip?
@@ -293,7 +296,7 @@ num-foxes
 num-foxes
 1
 100
-38.0
+100.0
 1
 1
 NIL
@@ -325,7 +328,7 @@ max-turn-rabbit
 max-turn-rabbit
 1
 360
-202.0
+145.0
 1
 1
 NIL
@@ -340,7 +343,7 @@ grass-growth
 grass-growth
 0
 1000
-172.0
+210.0
 1
 1
 NIL
@@ -397,7 +400,7 @@ fox-gain-from-food
 fox-gain-from-food
 0
 100
-30.0
+10.0
 1
 1
 NIL
@@ -412,7 +415,7 @@ rabbit-gain-from-food
 rabbit-gain-from-food
 0
 20
-15.0
+10.0
 1
 1
 NIL
@@ -427,7 +430,7 @@ fox-move-cost
 fox-move-cost
 0
 20
-3.0
+1.5
 0.5
 1
 NIL
@@ -457,7 +460,7 @@ fox-reproduce-cost
 fox-reproduce-cost
 0
 100
-41.0
+25.0
 1
 1
 NIL
@@ -472,7 +475,7 @@ rabbit-reproduce-cost
 rabbit-reproduce-cost
 0
 100
-30.0
+25.0
 1
 1
 NIL
@@ -502,7 +505,7 @@ rabbit-reproduce-%
 rabbit-reproduce-%
 0
 100
-3.0
+4.0
 1
 1
 %
@@ -517,7 +520,7 @@ fox-hunger-threshold
 fox-hunger-threshold
 0
 100
-45.0
+27.0
 1
 1
 NIL
@@ -532,7 +535,7 @@ rabbit-hunger-threshold
 rabbit-hunger-threshold
 0
 100
-45.0
+27.0
 1
 1
 NIL
@@ -569,7 +572,7 @@ max-turn-fox
 max-turn-fox
 1
 360
-177.0
+140.0
 1
 1
 NIL
@@ -584,7 +587,7 @@ fox-max-age
 fox-max-age
 5
 100
-20.0
+40.0
 1
 1
 NIL
@@ -599,7 +602,7 @@ rabbit-max-age
 rabbit-max-age
 5
 100
-16.0
+40.0
 1
 1
 NIL
