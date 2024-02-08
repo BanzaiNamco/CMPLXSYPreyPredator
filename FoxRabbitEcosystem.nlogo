@@ -296,7 +296,7 @@ num-foxes
 num-foxes
 1
 100
-100.0
+50.0
 1
 1
 NIL
@@ -366,7 +366,7 @@ true
 "" ""
 PENS
 "rabbit" 1.0 0 -8630108 true "" "plot count rabbits"
-"fox" 1.0 0 -2674135 true "" "plot count foxes"
+"fox" 1.0 0 -2674135 true "" "plot count foxes * 2"
 "grass" 1.0 0 -7500403 true "" "plot sum [grass-amount] of patches / 5"
 
 MONITOR
@@ -400,7 +400,7 @@ fox-gain-from-food
 fox-gain-from-food
 0
 100
-10.0
+40.0
 1
 1
 NIL
@@ -415,7 +415,7 @@ rabbit-gain-from-food
 rabbit-gain-from-food
 0
 20
-10.0
+7.0
 1
 1
 NIL
@@ -430,7 +430,7 @@ fox-move-cost
 fox-move-cost
 0
 20
-1.5
+2.0
 0.5
 1
 NIL
@@ -460,7 +460,7 @@ fox-reproduce-cost
 fox-reproduce-cost
 0
 100
-25.0
+30.0
 1
 1
 NIL
@@ -475,7 +475,7 @@ rabbit-reproduce-cost
 rabbit-reproduce-cost
 0
 100
-25.0
+35.0
 1
 1
 NIL
@@ -490,7 +490,7 @@ fox-reproduce-%
 fox-reproduce-%
 0
 100
-4.0
+3.0
 1
 1
 %
@@ -520,7 +520,7 @@ fox-hunger-threshold
 fox-hunger-threshold
 0
 100
-27.0
+42.0
 1
 1
 NIL
@@ -535,7 +535,7 @@ rabbit-hunger-threshold
 rabbit-hunger-threshold
 0
 100
-27.0
+45.0
 1
 1
 NIL
@@ -587,7 +587,7 @@ fox-max-age
 fox-max-age
 5
 100
-40.0
+30.0
 1
 1
 NIL
@@ -602,7 +602,7 @@ rabbit-max-age
 rabbit-max-age
 5
 100
-40.0
+30.0
 1
 1
 NIL
